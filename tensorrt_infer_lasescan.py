@@ -124,19 +124,27 @@ def generate_laserscan(result_mask, depth_image, x, y, laserscan_pub, image_head
     num_of_scan_point=int(2*3.14/laser_scan_msg.angle_increment)
     laser_scan_msg.ranges=[float('inf')] * num_of_scan_point
     laser_scan_msg.scan_time = num_of_scan_point*laser_scan_msg.time_increment
+    points_array = np.array(points)
 
-    for rotated_relative_point in points:
-        x_rotated=rotated_relative_point[0]
-        y_rotated=rotated_relative_point[1]
-        angle=math.atan2(y_rotated,x_rotated)
-        index=int((angle-laser_scan_msg.angle_min)//laser_scan_msg.angle_increment)
-        distance=math.sqrt(x_rotated**2 + y_rotated**2)
-        if(index>=num_of_scan_point or distance>laser_scan_msg.range_max):
-            continue
-        if(distance<laser_scan_msg.ranges[index]):
-            laser_scan_msg.ranges[index]=distance
-
+    angles = np.arctan2(points_array[:, 1], points_array[:, 0])
+    distances = np.sqrt(points_array[:, 0]**2 + points_array[:, 1]**2)
+    indices = ((angles - laser_scan_msg.angle_min) // laser_scan_msg.angle_increment).astype(int)
+    mask = (indices < num_of_scan_point) & (distances <= laser_scan_msg.range_max)
+    laser_scan_msg.ranges[indices[mask]] = np.minimum(laser_scan_msg.ranges[indices[mask]], distances[mask])
     laserscan_pub.publish(laser_scan_msg)
+    
+    # for rotated_relative_point in points:
+    #     x_rotated=rotated_relative_point[0]
+    #     y_rotated=rotated_relative_point[1]
+    #     angle=math.atan2(y_rotated,x_rotated)
+    #     index=int((angle-laser_scan_msg.angle_min)//laser_scan_msg.angle_increment)
+    #     distance=math.sqrt(x_rotated**2 + y_rotated**2)
+    #     if(index>=num_of_scan_point or distance>laser_scan_msg.range_max):
+    #         continue
+    #     if(distance<laser_scan_msg.ranges[index]):
+    #         laser_scan_msg.ranges[index]=distance
+
+    # laserscan_pub.publish(laser_scan_msg)
 
 
 class SegRos(object):
