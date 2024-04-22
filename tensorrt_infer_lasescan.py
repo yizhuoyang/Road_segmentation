@@ -126,15 +126,14 @@ def generate_laserscan(result_mask, depth_image, x, y, laserscan_pub, image_head
     laser_scan_msg.scan_time = num_of_scan_point*laser_scan_msg.time_increment
     points_array = np.array(points)
 
-    angles = np.arctan2(points_array[:, 1], points_array[:, 0])
-    distances = np.sqrt(points_array[:, 0]**2 + points_array[:, 1]**2)
+    angles = np.arctan2(points[:, 1], points[:, 0])
     indices = ((angles - laser_scan_msg.angle_min) / laser_scan_msg.angle_increment).astype(int)
-    mask = (indices >= 0) & (indices < num_of_scan_point) & (distances <= laser_scan_msg.range_max)
-    valid_indices = indices[mask]
-    valid_distances = distances[mask]
-    laser_scan_msg.ranges[valid_indices] = np.minimum(laser_scan_msg.ranges[valid_indices], valid_distances)
-    
-    # 发布 LaserScan 消息
+    distances = np.sqrt(points[:, 0]**2 + points[:, 1]**2)
+    valid_indices = (indices < num_of_scan_point) & (distances <= laser_scan_msg.range_max)
+    valid_distances = distances[valid_indices]
+    valid_indices = indices[valid_indices]
+    update_indices = valid_distances < laser_scan_msg.ranges[valid_indices]
+    laser_scan_msg.ranges[valid_indices[update_indices]] = valid_distances[update_indices]
     laserscan_pub.publish(laser_scan_msg)
     
     # for rotated_relative_point in points:
