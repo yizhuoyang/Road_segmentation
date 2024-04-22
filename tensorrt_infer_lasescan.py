@@ -109,11 +109,8 @@ def generate_point_cloud(result_mask, depth_image, x, y, pointcloud_pub):
     pointcloud_pub.publish(pc_msg)
 
 def generate_laserscan(result_mask, depth_image, x, y, laserscan_pub, image_header):
-    Z = set_outer_border_to_zero(extract_exact_border_and_adjacent(result_mask)) * np.nan_to_num(depth_image)
-    X = x * Z
-    points = np.stack((Z.flatten(),-X.flatten()), axis=-1)
     laser_scan_msg = LaserScan()
-    laser_scan_msg.header=image_header
+    laser_scan_msg.header = image_header
     laser_scan_msg.header.frame_id = 'camera_link'
     laser_scan_msg.angle_min = -3.142  # Minimum angle [rad]
     laser_scan_msg.angle_max = 3.142   # Maximum angle [rad]
@@ -121,34 +118,29 @@ def generate_laserscan(result_mask, depth_image, x, y, laserscan_pub, image_head
     laser_scan_msg.time_increment = 0.000001  # Time between measurements [seconds]
     laser_scan_msg.range_min = 0.0  # Minimum range value [meters]
     laser_scan_msg.range_max = 15.0  # Maximum range value [meters]
-    num_of_scan_point=int(2*3.14/laser_scan_msg.angle_increment)
-    laser_scan_msg.ranges=[float('inf')] * num_of_scan_point
-    laser_scan_msg.scan_time = num_of_scan_point*laser_scan_msg.time_increment
-    points_array = np.array(points)
-
-    angles = np.arctan2(points[:, 1], points[:, 0])
-    indices = ((angles - laser_scan_msg.angle_min) / laser_scan_msg.angle_increment).astype(int)
-    distances = np.sqrt(points[:, 0]**2 + points[:, 1]**2)
-    valid_indices = (indices < num_of_scan_point) & (distances <= laser_scan_msg.range_max)
-    valid_distances = distances[valid_indices]
-    valid_indices = indices[valid_indices]
-    update_indices = valid_distances < laser_scan_msg.ranges[valid_indices]
-    laser_scan_msg.ranges[valid_indices[update_indices]] = valid_distances[update_indices]
+    num_of_scan_point = int((laser_scan_msg.angle_max - laser_scan_msg.angle_min) / laser_scan_msg.angle_increment) + 1
+    laser_scan_msg.scan_time = num_of_scan_point * laser_scan_msg.time_increment
+    Z = set_outer_border_to_zero(extract_exact_border_and_adjacent(result_mask)) * np.nan_to_num(depth_image)
+    # Calculate X
+    X = x * Z
+    # Calculate angles for all points
+    angles = np.arctan2(-X, Z)
+    # Calculate indices for all points
+    index = ((angles - (-3.142)) / 0.01).astype(int)
+    # Filter out invalid indices
+    valid_indices_mask = (index >= 0) & (index < num_of_scan_point)
+    # Calculate distances for all points
+    distances = np.sqrt(X ** 2 + Z ** 2)
+    # Filter out distances outside of range
+    valid_distances_mask = distances <= 15.0
+    # Create a mask for closer points
+    closer_points_mask = (distances < np.inf) & valid_indices_mask & valid_distances_mask
+    # Initialize ranges with infinity
+    laser_scan_msg.ranges = np.full(num_of_scan_point, np.inf)
+    # Update laser scan where distances are closer
+    laser_scan_msg.ranges[index[closer_points_mask]] = distances[closer_points_mask]
+    # Publish the updated laser scan message
     laserscan_pub.publish(laser_scan_msg)
-    
-    # for rotated_relative_point in points:
-    #     x_rotated=rotated_relative_point[0]
-    #     y_rotated=rotated_relative_point[1]
-    #     angle=math.atan2(y_rotated,x_rotated)
-    #     index=int((angle-laser_scan_msg.angle_min)//laser_scan_msg.angle_increment)
-    #     distance=math.sqrt(x_rotated**2 + y_rotated**2)
-    #     if(index>=num_of_scan_point or distance>laser_scan_msg.range_max):
-    #         continue
-    #     if(distance<laser_scan_msg.ranges[index]):
-    #         laser_scan_msg.ranges[index]=distance
-
-    # laserscan_pub.publish(laser_scan_msg)
-
 
 class SegRos(object):
     def __init__(self, predictor):
