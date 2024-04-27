@@ -210,4 +210,3 @@ if __name__ == "__main__":
     yolox_ros = SegRos(predictor=engine)
     yolox_ros.spin()
     print('end')
-
