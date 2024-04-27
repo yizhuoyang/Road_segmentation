@@ -1,0 +1,6 @@
+[submodule "cityscapesScripts"]
+	path = cityscapesScripts
+	url = https://github.com/mcordts/cityscapesScripts
+[submodule "segment-anything"]
+	path = segment-anything
+	url = https://github.com/facebookresearch/segment-anything
