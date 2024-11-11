@@ -54,6 +54,9 @@ class NTU(Dataset):
         label = io.read_image(lbl_path)
         image = image[:3,:,:]
         label = label[:1,:,:]
+        if label.max()==255:
+            label = label/255
+            label = label.to(torch.int)
         if self.transform:
             image, label = self.transform(image, label)
 
@@ -66,4 +69,4 @@ class NTU(Dataset):
 
 if __name__ == '__main__':
     from semseg.utils.visualize import visualize_dataset_sample
-    visualize_dataset_sample(NTU, '/home/kemove/delta_project/Sementic_segmentation/semantic-segmentation/data/ntu')
+    visualize_dataset_sample(NTU, '../../data/hdb')

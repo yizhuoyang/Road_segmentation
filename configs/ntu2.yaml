@@ -4,7 +4,7 @@ SAVE_DIR        : 'output'         # output folder name used for saving the mode
 MODEL:                                    
   NAME          : DDRNet                                           # name of the model you are using
   BACKBONE      : DDRNet-23slim                                                 # model variant
-  PRETRAINED    : '/home/kemove/delta_project/Sementic_segmentation/semantic-segmentation/output/DDRNet_DDRNet-23slim_NTU.pth'
+  PRETRAINED    : '../output/DDRNet_DDRNet-23slim_NTU.pth'
 #  PRETRAINED    : ''   # backbone model's weight
 
 DATASET:
@@ -38,7 +38,7 @@ SCHEDULER:
   
 
 EVAL:
-  MODEL_PATH    : '/home/kemove/delta_project/Sementic_segmentation/semantic-segmentation/output/DDRNet_DDRNet-23slim_NTU.pth'     # trained model file path
+  MODEL_PATH    : '../output/DDRNet_DDRNet-23slim_NTU.pth'     # trained model file path
   IMAGE_SIZE    : [512,512]                         # evaluation image size in (h, w)
   MSF:
     ENABLE      : false                                   # multi-scale and flip evaluation
@@ -47,7 +47,7 @@ EVAL:
 
 
 TEST:
-  MODEL_PATH    : '/home/kemove/delta_project/Sementic_segmentation/semantic-segmentation/output/model/DDRNet_DDRNet-23slim_NTU.pth'    # trained model file path
+  MODEL_PATH    : '../output/DDRNet_DDRNet-23slim_NTU.pth'    # trained model file path
   FILE          : '/home/kemove/delta_project/Sementic_segmentation/semantic-segmentation/assests/cityscapes'                    # filename or foldername
   IMAGE_SIZE    : [512,512]                          # inference image size in (h, w)
   OVERLAY       : true                                # save the overlay result (image_alpha+label_alpha)
