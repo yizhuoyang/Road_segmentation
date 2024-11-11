@@ -76,10 +76,10 @@ $ python delta/tensorrt_infer_lasescan.py
 $ python delta/tensorrt_infer_with_depth_refine_more.py 
 ```
 NOTE: 
-```sh
+
 tensorrt_infer_lasescan.py and tensorrt_infer_with_depth_refine_more.py are also able to generate segmentation result only without depth input 
-```
-```sh
+
 Goes to depthanythingv2 repo to download the weights for depthanything model: https://github.com/DepthAnything/Depth-Anything-V2
+
 And Download segmenganything weights from: https://github.com/facebookresearch/segment-anything
-```
+
